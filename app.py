@@ -5,11 +5,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import os
 import json
+import tempfile
 from functools import wraps
 
-app = Flask(__name__)
+# Use a writable runtime path on Vercel and similar serverless environments.
+instance_path = os.environ.get('FLASK_INSTANCE_PATH', os.path.join(tempfile.gettempdir(), 'instance'))
+os.makedirs(instance_path, exist_ok=True)
+app = Flask(__name__, instance_path=instance_path)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///finance.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:////tmp/finance.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
