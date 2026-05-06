@@ -1,0 +1,531 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Finance Manager{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h6><i class="fas fa-arrow-up"></i> Total Income</h6>
+            <h3 id="totalIncome">₮ 0.00</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h6><i class="fas fa-arrow-down"></i> Total Expenses</h6>
+            <h3 id="totalExpenses">₮ 0.00</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <h6><i class="fas fa-piggy-bank"></i> Total Savings</h6>
+            <h3 id="totalSavings">₮ 0.00</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <h6><i class="fas fa-bullseye"></i> Goals Progress</h6>
+            <h3 id="goalsProgress">0%</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Transactions Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-exchange-alt"></i> Add Transaction
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="transactionForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" id="transType" name="type" required>
+                                <option value="">Select type</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="transCategory" name="category" required>
+                                <option value="">Select category</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Amount (₮)</label>
+                            <input type="number" class="form-control" id="transAmount" name="amount" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="transDate" name="date">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="transDescription" name="description">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-custom w-100">
+                        <i class="fas fa-plus"></i> Add Transaction
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i> Recent Transactions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="recentTransactions" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Savings Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-piggy-bank"></i> Create Savings
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="savingsForm">
+                    <div class="mb-3">
+                        <label class="form-label">Initial Amount (₮)</label>
+                        <input type="number" class="form-control" id="savingsAmount" name="initial_amount" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Annual Interest Rate (%)</label>
+                        <input type="number" class="form-control" id="savingsRate" name="annual_rate" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Compound Frequency</label>
+                        <select class="form-select" id="savingsFrequency" name="compound_frequency">
+                            <option value="daily">Daily</option>
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-custom w-100">
+                        <i class="fas fa-plus"></i> Create Savings
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Active Savings -->
+        <div class="card mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line"></i> Your Savings
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="savingsList">
+                    <p class="text-muted">No savings yet</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-bullseye"></i> Create Goal
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="goalForm">
+                    <div class="mb-3">
+                        <label class="form-label">Goal Name</label>
+                        <input type="text" class="form-control" id="goalName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Target Amount (₮)</label>
+                        <input type="number" class="form-control" id="goalAmount" name="target_amount" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deadline</label>
+                        <input type="date" class="form-control" id="goalDeadline" name="deadline">
+                    </div>
+                    <button type="submit" class="btn btn-info btn-custom w-100">
+                        <i class="fas fa-plus"></i> Create Goal
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Goals List -->
+        <div class="card">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Your Goals
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="goalsList">
+                    <p class="text-muted">No goals yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const incomeCategories = ['Salary', 'Bonus', 'Freelance', 'Investment', 'Other Income'];
+const expenseCategories = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Other'];
+
+// Update category options based on type
+document.getElementById('transType').addEventListener('change', function() {
+    const categorySelect = document.getElementById('transCategory');
+    const categories = this.value === 'income' ? incomeCategories : expenseCategories;
+    categorySelect.innerHTML = '<option value="">Select category</option>';
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+    });
+});
+
+// Set default date to today
+document.getElementById('transDate').valueAsDate = new Date();
+
+// Load dashboard data
+async function loadDashboard() {
+    try {
+        const response = await fetch('/api/dashboard-summary');
+        const data = await response.json();
+        
+        document.getElementById('totalIncome').textContent = '₮ ' + data.total_income.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('totalExpenses').textContent = '₮ ' + data.total_expenses.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('totalSavings').textContent = '₮ ' + data.total_savings.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('goalsProgress').textContent = data.goals_progress.toFixed(1) + '%';
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Load transactions
+async function loadTransactions() {
+    try {
+        const response = await fetch('/api/transactions');
+        const transactions = await response.json();
+        
+        const tbody = document.getElementById('transactionsBody');
+        tbody.innerHTML = '';
+        
+        transactions.slice(0, 10).forEach(trans => {
+            const row = document.createElement('tr');
+            const date = new Date(trans.date).toLocaleDateString();
+            const amountClass = trans.type === 'income' ? 'text-success' : 'text-danger';
+            const sign = trans.type === 'income' ? '+' : '-';
+            
+            row.innerHTML = `
+                <td>${date}</td>
+                <td><span class="badge badge-${trans.type === 'income' ? 'success' : 'danger'}">${trans.type}</span></td>
+                <td>${trans.category}</td>
+                <td class="${amountClass}"><strong>${sign}₮ ${trans.amount.toFixed(2)}</strong></td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteTransaction(${trans.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+    }
+}
+
+// Load savings
+async function loadSavings() {
+    try {
+        const response = await fetch('/api/savings');
+        const savingsList = await response.json();
+        
+        const container = document.getElementById('savingsList');
+        if (savingsList.length === 0) {
+            container.innerHTML = '<p class="text-muted">No savings yet</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        savingsList.forEach(saving => {
+            const interest = (saving.current_amount - saving.initial_amount).toFixed(2);
+            const div = document.createElement('div');
+            div.className = 'mb-3 p-3 bg-light rounded';
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Rate: ${saving.annual_rate}%</strong>
+                        <p class="mb-2 text-muted small">${saving.compound_frequency}</p>
+                        <p class="mb-1 small"><strong>Initial:</strong> ₮ ${saving.initial_amount.toFixed(2)}</p>
+                        <p class="mb-1 small"><strong>Current:</strong> ₮ ${saving.current_amount.toFixed(2)}</p>
+                        <p class="text-success small"><strong>Interest:</strong> ₮ ${interest}</p>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSavings(${saving.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    } catch (error) {
+        console.error('Error loading savings:', error);
+    }
+}
+
+// Load goals
+async function loadGoals() {
+    try {
+        const response = await fetch('/api/goals');
+        const goalsList = await response.json();
+        
+        const container = document.getElementById('goalsList');
+        if (goalsList.length === 0) {
+            container.innerHTML = '<p class="text-muted">No goals yet</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        goalsList.forEach(goal => {
+            const div = document.createElement('div');
+            div.className = 'mb-3 p-3 bg-light rounded';
+            
+            const progressWidth = Math.min(goal.progress_percentage, 100);
+            const progressClass = goal.progress_percentage >= 100 ? 'bg-success' : 'bg-info';
+            
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <strong>${goal.name}</strong>
+                    <button class="btn btn-sm btn-danger" onclick="deleteGoal(${goal.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="progress mb-2" style="height: 8px;">
+                    <div class="progress-bar ${progressClass}" style="width: ${progressWidth}%"></div>
+                </div>
+                <p class="mb-1 small">
+                    ₮ ${goal.current_amount.toFixed(2)} / ₮ ${goal.target_amount.toFixed(2)}
+                </p>
+                <p class="mb-2 small text-muted">${goal.progress_percentage.toFixed(1)}% complete</p>
+                <input type="number" class="form-control form-control-sm mb-2" placeholder="Amount to add" id="contrib-${goal.id}">
+                <button class="btn btn-sm btn-primary w-100" onclick="contributeToGoal(${goal.id})">
+                    <i class="fas fa-plus"></i> Contribute
+                </button>
+            `;
+            container.appendChild(div);
+        });
+    } catch (error) {
+        console.error('Error loading goals:', error);
+    }
+}
+
+// Add transaction
+document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        type: document.getElementById('transType').value,
+        category: document.getElementById('transCategory').value,
+        amount: document.getElementById('transAmount').value,
+        description: document.getElementById('transDescription').value,
+        date: document.getElementById('transDate').value
+    };
+    
+    try {
+        const response = await fetch('/api/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transDate').valueAsDate = new Date();
+            loadTransactions();
+            loadDashboard();
+        } else {
+            alert('Error adding transaction');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+// Delete transaction
+async function deleteTransaction(id) {
+    if (!confirm('Delete this transaction?')) return;
+    
+    try {
+        const response = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            loadTransactions();
+            loadDashboard();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Add savings
+document.getElementById('savingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        initial_amount: document.getElementById('savingsAmount').value,
+        annual_rate: document.getElementById('savingsRate').value,
+        compound_frequency: document.getElementById('savingsFrequency').value
+    };
+    
+    try {
+        const response = await fetch('/api/savings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            document.getElementById('savingsForm').reset();
+            loadSavings();
+            loadDashboard();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+// Delete savings
+async function deleteSavings(id) {
+    if (!confirm('Delete this savings account?')) return;
+    
+    try {
+        const response = await fetch(`/api/savings/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            loadSavings();
+            loadDashboard();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Add goal
+document.getElementById('goalForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('goalName').value,
+        target_amount: document.getElementById('goalAmount').value,
+        deadline: document.getElementById('goalDeadline').value
+    };
+    
+    try {
+        const response = await fetch('/api/goals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            document.getElementById('goalForm').reset();
+            loadGoals();
+            loadDashboard();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+// Contribute to goal
+async function contributeToGoal(goalId) {
+    const inputId = `contrib-${goalId}`;
+    const amount = parseFloat(document.getElementById(inputId).value);
+    
+    if (!amount || amount <= 0) {
+        alert('Enter a valid amount');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/goals/${goalId}/contribute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount })
+        });
+        
+        if (response.ok) {
+            loadGoals();
+            loadDashboard();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Delete goal
+async function deleteGoal(id) {
+    if (!confirm('Delete this goal?')) return;
+    
+    try {
+        const response = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            loadGoals();
+            loadDashboard();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Initial load
+loadDashboard();
+loadTransactions();
+loadSavings();
+loadGoals();
+
+// Refresh every 30 seconds
+setInterval(() => {
+    loadDashboard();
+    loadTransactions();
+    loadSavings();
+    loadGoals();
+}, 30000);
+</script>
+
+<style>
+    .badge-income {
+        background-color: #28a745 !important;
+    }
+    .badge-expense {
+        background-color: #dc3545 !important;
+    }
+</style>
+{% endblock %}
